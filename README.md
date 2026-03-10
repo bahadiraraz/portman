@@ -2,22 +2,7 @@
 
 Interactive TUI tool to see what's running on your dev ports — and kill it.
 
-```
-          ╷
-        ╶─●─╴
-          │
-     ╶────┼────╴
-          │
-          │
-          │
-      ╭───┴───╮
-    ╭─╯       ╰─╮
-    │           │
-    ╰─╮       ╭─╯
-      ╰───────╯
-
-    p o r t m a n
-```
+<img width="1538" height="936" alt="image" src="https://github.com/user-attachments/assets/b678eb06-4e89-447d-aed6-17cf726bf69a" />
 
 ## Features
 

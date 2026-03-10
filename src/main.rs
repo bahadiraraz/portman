@@ -99,16 +99,12 @@ fn cmd_ps(json_out: bool) -> io::Result<()> {
     );
     println!("  {}", "─".repeat(78));
     for e in &entries {
-        let pname = std::path::Path::new(&e.name)
-            .file_name()
-            .map(|n| n.to_string_lossy().to_string())
-            .unwrap_or_else(|| e.name.clone());
         println!(
             "  {:<7} {:<7} {:<10} {:<18} {:<14} {}",
             e.port,
             e.pid,
             trunc(&e.user, 10),
-            trunc(&pname, 18),
+            trunc(&e.name, 18),
             e.framework,
             trunc(&e.start_cmd, 40)
         );

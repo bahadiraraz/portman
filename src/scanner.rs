@@ -55,13 +55,15 @@ struct ProcInfo {
     cmdline: String,
 }
 
-/// ps call: batch get ppid, user, comm, args for pids
+/// ps call: batch get ppid, user, args for pids
 /// When called with no `-p` filter, gets ALL processes (for parent chain lookup)
 fn batch_ps_all() -> HashMap<u32, ProcInfo> {
     let mut map = HashMap::new();
 
+    // Skip comm= — on macOS it's a full path that can contain spaces, breaking parsing.
+    // Extract process name from args= instead.
     let Ok(output) = Command::new("ps")
-        .args(["-axo", "pid=,ppid=,user=,comm=,args="])
+        .args(["-axo", "pid=,ppid=,user=,args="])
         .output()
     else {
         return map;
@@ -74,7 +76,7 @@ fn batch_ps_all() -> HashMap<u32, ProcInfo> {
             continue;
         }
 
-        // Format: "PID PPID USER COMM ARGS..."
+        // Format: "PID PPID USER ARGS..."
         let mut s = trimmed;
 
         // Parse PID
@@ -108,12 +110,15 @@ fn batch_ps_all() -> HashMap<u32, ProcInfo> {
         let user = s[..i].to_string();
         s = s[i..].trim_start();
 
-        // Remaining: "COMM ARGS..."
-        // COMM is the first token, ARGS is everything after COMM
-        let (name, cmdline) = match s.find(char::is_whitespace) {
-            Some(i) => (s[..i].to_string(), s[i..].trim_start().to_string()),
-            None => (s.to_string(), s.to_string()),
-        };
+        // Remaining is ARGS (full command line)
+        let cmdline = s.to_string();
+
+        // Extract process name: basename of first token in args
+        let first_token = cmdline.split_whitespace().next().unwrap_or(&cmdline);
+        let name = Path::new(first_token)
+            .file_name()
+            .map(|n| n.to_string_lossy().to_string())
+            .unwrap_or_else(|| first_token.to_string());
 
         map.insert(pid, ProcInfo { ppid, user, name, cmdline });
     }

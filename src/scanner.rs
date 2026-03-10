@@ -430,6 +430,13 @@ fn detect_package_manager(cmdline: &str, cwd: &str) -> &'static str {
 
 // ── Public API ──────────────────────────────────────────────────────────────
 
+/// Scan ALL listening TCP ports (no filter), with process info
+pub fn scan_all_ports() -> Vec<PortInfo> {
+    let port_pid = get_listening_ports();
+    let all: Vec<(u16, u32)> = port_pid.into_iter().collect();
+    build_port_infos(all, false)
+}
+
 pub fn scan_ports(known_only: bool) -> Vec<PortInfo> {
     let port_pid = get_listening_ports();
 
@@ -438,8 +445,12 @@ pub fn scan_ports(known_only: bool) -> Vec<PortInfo> {
         .filter(|&(port, _)| (1024..=65000).contains(&port))
         .collect();
 
+    build_port_infos(filtered, known_only)
+}
+
+fn build_port_infos(ports: Vec<(u16, u32)>, known_only: bool) -> Vec<PortInfo> {
     let unique_pids: Vec<u32> = {
-        let mut pids: Vec<u32> = filtered.iter().map(|&(_, pid)| pid).collect();
+        let mut pids: Vec<u32> = ports.iter().map(|&(_, pid)| pid).collect();
         pids.sort_unstable();
         pids.dedup();
         pids
@@ -453,7 +464,7 @@ pub fn scan_ports(known_only: bool) -> Vec<PortInfo> {
     let ps_info = ps_handle.join().unwrap_or_default();
     let cwd_info = cwd_handle.join().unwrap_or_default();
 
-    let mut results: Vec<PortInfo> = filtered
+    let mut results: Vec<PortInfo> = ports
         .iter()
         .map(|&(port, pid)| {
             let pi = ps_info.get(&pid);

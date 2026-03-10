@@ -34,6 +34,11 @@ enum Commands {
         #[arg(short, long)]
         json: bool,
     },
+    /// Show ALL listening TCP ports with process info (like netstat)
+    Ps {
+        #[arg(short, long)]
+        json: bool,
+    },
     /// Show detailed info for a specific port
     Info { port: u16 },
     /// Kill the process on a specific port
@@ -48,6 +53,7 @@ fn main() -> io::Result<()> {
     let cli = Cli::parse();
     match cli.command {
         Some(Commands::List { all, json }) => cmd_list(all, json),
+        Some(Commands::Ps { json }) => cmd_ps(json),
         Some(Commands::Info { port }) => cmd_info(port),
         Some(Commands::Kill { port, force }) => cmd_kill(port, force),
         None => run_tui(),
@@ -71,6 +77,41 @@ fn cmd_list(all: bool, json_out: bool) -> io::Result<()> {
     println!("  {}", "─".repeat(60));
     for e in &entries {
         println!("  {:<6} {:<7} {:<20} {:<14} {:<8}", e.port, e.pid, trunc(&e.project, 20), e.framework, e.language);
+    }
+    println!("\n  {} port(s)\n", entries.len());
+    Ok(())
+}
+
+fn cmd_ps(json_out: bool) -> io::Result<()> {
+    let entries = scanner::scan_all_ports();
+    if json_out {
+        println!("{}", serde_json::to_string_pretty(&entries).unwrap());
+        return Ok(());
+    }
+    if entries.is_empty() {
+        println!("  No listening TCP ports found.");
+        return Ok(());
+    }
+    println!();
+    println!(
+        "  {:<7} {:<7} {:<10} {:<18} {:<14} COMMAND",
+        "PORT", "PID", "USER", "PROCESS", "FRAMEWORK"
+    );
+    println!("  {}", "─".repeat(78));
+    for e in &entries {
+        let pname = std::path::Path::new(&e.name)
+            .file_name()
+            .map(|n| n.to_string_lossy().to_string())
+            .unwrap_or_else(|| e.name.clone());
+        println!(
+            "  {:<7} {:<7} {:<10} {:<18} {:<14} {}",
+            e.port,
+            e.pid,
+            trunc(&e.user, 10),
+            trunc(&pname, 18),
+            e.framework,
+            trunc(&e.start_cmd, 40)
+        );
     }
     println!("\n  {} port(s)\n", entries.len());
     Ok(())

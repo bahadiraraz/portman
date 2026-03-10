@@ -13,7 +13,7 @@ pub fn drain_events(app: &mut App) -> bool {
 
     while let Ok(ev) = event::read() {
         if let Event::Key(key) = ev {
-            if key.kind == KeyEventKind::Press {
+            if matches!(key.kind, KeyEventKind::Press | KeyEventKind::Repeat) {
                 had_input = true;
                 if !handle_key(app, key) {
                     return true;

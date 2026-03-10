@@ -110,8 +110,8 @@ impl App {
         let (tx, rx) = mpsc::channel();
         self.scan_rx = Some(rx);
         std::thread::spawn(move || {
-            // Always scan ALL ports; filtering happens client-side
-            let results = scanner::scan_ports(false);
+            // Scan ALL listening ports; filtering happens client-side
+            let results = scanner::scan_all_ports();
             let _ = tx.send(results);
         });
     }

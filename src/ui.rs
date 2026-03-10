@@ -418,7 +418,7 @@ fn draw_confirm(f: &mut Frame, app: &App, area: Rect) {
 
 fn kv(label: &str, value: &str, vc: Color) -> Line<'static> {
     Line::from(vec![
-        s(&format!("  {:<10}", label), DIM, Modifier::empty()),
+        s(&format!("  {label:<10}"), DIM, Modifier::empty()),
         s("  ", Color::Reset, Modifier::empty()),
         s(value, vc, Modifier::empty()),
     ])
@@ -426,7 +426,7 @@ fn kv(label: &str, value: &str, vc: Color) -> Line<'static> {
 
 fn ckv(label: &str, value: &str, vc: Color) -> Line<'static> {
     Line::from(vec![
-        s(&format!("  {:<12}", label), DIM, Modifier::empty()),
+        s(&format!("  {label:<12}"), DIM, Modifier::empty()),
         s(value, vc, Modifier::empty()),
     ])
 }
@@ -439,7 +439,7 @@ fn s(text: &str, fg: Color, modifier: Modifier) -> Span<'static> {
 }
 
 fn fmt_col(text: &str, width: usize) -> String {
-    format!("{:<width$}", text, width = width)
+    format!("{text:<width$}")
 }
 
 fn trunc(text: &str, max: usize) -> String {

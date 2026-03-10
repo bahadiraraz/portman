@@ -11,12 +11,7 @@ pub fn drain_events(app: &mut App) -> bool {
         return false;
     }
 
-    loop {
-        let ev = match event::read() {
-            Ok(ev) => ev,
-            Err(_) => break,
-        };
-
+    while let Ok(ev) = event::read() {
         if let Event::Key(key) = ev {
             if key.kind == KeyEventKind::Press {
                 had_input = true;

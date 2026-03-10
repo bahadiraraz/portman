@@ -392,10 +392,8 @@ fn match_package_script(cmdline: &str, cwd: &str) -> Option<String> {
                 .filter(|w| cmd_lower.contains(&w.to_lowercase()))
                 .count();
 
-            if matched == words.len() {
-                if best.map(|(_, s)| matched > s).unwrap_or(true) {
-                    best = Some((name.as_str(), matched));
-                }
+            if matched == words.len() && best.map(|(_, s)| matched > s).unwrap_or(true) {
+                best = Some((name.as_str(), matched));
             }
         }
     }
@@ -437,7 +435,7 @@ pub fn scan_ports(known_only: bool) -> Vec<PortInfo> {
 
     let filtered: Vec<(u16, u32)> = port_pid
         .into_iter()
-        .filter(|&(port, _)| port >= 1024 && port <= 65000)
+        .filter(|&(port, _)| (1024..=65000).contains(&port))
         .collect();
 
     let unique_pids: Vec<u32> = {
